@@ -15,23 +15,39 @@ struct block_metadata{
 void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);
 void *calloc(size_t nelem, size_t elsize);
+void free(void *ptr);
 struct block_metadata *get_free_block(struct block_metadata **previous, size_t size);
 struct block_metadata *allocate_space(struct block_metadata *last, size_t size);
 struct block_metadata *get_segment_block_metadata(void *ptr);
-void free(void *ptr);
 
 void *global_base_block = NULL;
 
 int main(void){
-    uint32_t *mem = malloc(sizeof(uint32_t) * 11);
+    uint32_t *mem = calloc(11, sizeof(uint32_t));
     for(int i = 0; i < 11; i++){
-        mem[i] = 11 - i;
+        mem[i] = i;
     }
 
-    printf("results:\n");
-
+    printf("calloc results:\n");
     for(int i = 0; i < 11; i++){
-        printf("%d element of array is: %d\n", i, mem[i]);
+        printf("%d element of array is: %d\n", i + 1, mem[i]);
+    }
+
+    mem = realloc(mem, sizeof(uint32_t) * 20);
+    for(int i = 11; i < 20; i++){
+        mem[i] = i;
+    }
+
+    printf("realloc results:\n");
+    for(int i = 0; i < 20; i++){
+        printf("%d element of array is: %d\n", i + 1, mem[i]);
+    }
+
+    free(mem);
+
+    printf("free results:\n");
+    for(int i = 0; i < 20; i++){
+        printf("%d element of array is: %d\n", i + 1, mem[i]);
     }
 }
 
