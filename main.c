@@ -2,17 +2,23 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 struct block_metadata{
     size_t size;
-    struct blck_md *next;
+    struct block_metadata *next;
     int free;
 };
 
 #define META_SIZE sizeof(struct block_metadata)
 
 void *malloc(size_t size);
+void *realloc(void *ptr, size_t size);
+void *calloc(size_t nelem, size_t elsize);
 struct block_metadata *get_free_block(struct block_metadata **previous, size_t size);
+struct block_metadata *allocate_space(struct block_metadata *last, size_t size);
+struct block_metadata *get_segment_block_metadata(void *ptr);
+void free(void *ptr);
 
 void *global_base_block = NULL;
 
@@ -105,4 +111,36 @@ void free(void *ptr){
     struct block_metadata *block_ptr = get_segment_block_metadata(ptr);
     assert(block_ptr -> free == 0);
     block_ptr -> free = 1;
+}
+
+void *realloc(void *ptr, size_t size){
+    if(!ptr){
+        return malloc(size);
+    }
+
+    struct block_metadata *block_ptr = get_segment_block_metadata(ptr);
+    if(block_ptr -> size >= size){
+        
+        //TODO Implement splitting
+
+        return ptr;
+    }
+
+    void *new_ptr;
+    new_ptr = malloc(size);
+
+    if(!new_ptr){
+        return NULL;
+    }
+
+    memcpy(new_ptr, ptr, block_ptr -> size);
+    free(ptr);
+    return new_ptr;
+}
+
+void *calloc(size_t nelem, size_t elsize){
+    size_t size = nelem * elsize;
+    void *ptr = malloc(size);
+    memset(ptr, 0, size);
+    return ptr;
 }
